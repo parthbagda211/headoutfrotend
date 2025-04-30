@@ -28,9 +28,10 @@ const App = () => {
               element={
                 user ? (
                   <>
-                    <Home user={user} />
-                    <Index />
+                   <Home user={user} />
+                    <Index user={user} />
                   </>
+            
                 ) : (
                   <UsernameForm setUser={setUser} />
                 )

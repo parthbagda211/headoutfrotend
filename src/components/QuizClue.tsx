@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -10,7 +9,7 @@ interface QuizClueProps {
 
 const QuizClue: React.FC<QuizClueProps> = ({ clue, index }) => {
   return (
-    <Card 
+    <Card
       className={cn(
         "clue-card w-full mb-4 border-2 border-primary/20 animate-fade-in",
         "hover:shadow-lg transition-shadow duration-300"

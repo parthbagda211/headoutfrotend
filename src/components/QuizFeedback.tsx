@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,21 +34,21 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({ feedback, onNext }) => {
           </span>
         </div>
       </div>
-      
+
       <CardContent className="p-6">
         <div className="mb-4">
           <h4 className="text-sm font-semibold text-muted-foreground mb-1">Fun Fact</h4>
           <p className="text-lg">{feedback.fun_fact}</p>
         </div>
-        
+
         <div className="bg-muted/30 rounded-lg p-3 inline-block">
           <h4 className="text-sm font-semibold text-muted-foreground">Your Score</h4>
           <p className="text-2xl font-bold text-primary">{feedback.updated_score}</p>
         </div>
       </CardContent>
-      
+
       <CardFooter className="p-4 pt-0">
-        <Button 
+        <Button
           onClick={onNext}
           className="w-full bg-quiz-primary hover:bg-quiz-primary/90"
         >

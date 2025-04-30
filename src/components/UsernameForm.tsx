@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,28 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { User, ArrowRight } from "lucide-react";
-
-// Mock API for development purposes
-const mockAPI = {
-  post: async (url: string, data: any) => {
-    console.log(`POST request to ${url}`, data);
-    
-    if (url === '/user') {
-      return { 
-        data: {
-          user_id: "user-123",
-          username: data.username,
-          score: 0
-        }
-      };
-    }
-    
-    return { data: {} };
-  }
-};
-
-// Use this for development, will be replaced with real API in production
-const API = mockAPI;
+import axios from 'axios';
 
 interface UsernameFormProps {
   setUser: (user: any) => void;
@@ -40,7 +18,7 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!username.trim()) {
       toast({
         title: "Error",
@@ -49,12 +27,15 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
       });
       return;
     }
-    
+
     try {
       setSubmitting(true);
-      const res = await API.post('/user', { username });
+
+      // Ensure the API endpoint matches your backend route
+      const res = await axios.post('http://localhost:5000/api/user', { username });
+
       setUser(res.data);
-      
+
       toast({
         title: "Welcome!",
         description: "Get ready to start playing.",
@@ -66,6 +47,7 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
         description: "Could not create user. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setSubmitting(false);
     }
   };
@@ -76,7 +58,7 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
         <CardHeader className="bg-gradient-to-r from-quiz-primary/10 to-quiz-secondary/10">
           <CardTitle className="text-2xl font-bold">Quiz Clue Champ</CardTitle>
         </CardHeader>
-        
+
         <CardContent className="p-6 pt-8">
           <div className="mb-6 text-center">
             <div className="inline-flex items-center justify-center rounded-full bg-quiz-primary/10 p-3 mb-4">
@@ -85,13 +67,13 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
             <h2 className="text-xl font-semibold">Choose Your Username</h2>
             <p className="text-muted-foreground mt-1">Get ready to play the ultimate quiz game!</p>
           </div>
-          
+
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input 
+                <Input
                   id="username"
                   className="pl-9"
                   placeholder="Enter your username"
@@ -104,9 +86,9 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
                 />
               </div>
             </div>
-            
-            <Button 
-              type="submit" 
+
+            <Button
+              type="submit"
               className="w-full bg-quiz-primary hover:bg-quiz-primary/90"
               disabled={submitting}
             >
@@ -124,7 +106,7 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
             </Button>
           </form>
         </CardContent>
-        
+
         <CardFooter className="bg-muted/30 px-6 py-4 flex justify-center">
           <div className="text-center">
             <p className="text-sm text-muted-foreground">

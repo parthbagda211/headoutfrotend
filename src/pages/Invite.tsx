@@ -11,48 +11,18 @@ import { User, Mail, ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import ScoreDisplay from "@/components/ScoreDisplay";
+import { API } from '../api/api.ts';
 
-// Mock API for development purposes (similar to the one in Index.tsx)
-const mockAPI = {
-  get: async (url: string) => {
-    console.log(`GET request to ${url}`);
-    
-    // Mock invite response
-    if (url.includes('/invite/')) {
-      return { 
-        data: {
-          inviter_username: "QuizMaster42",
-          score: 350,
-          message: "Join me in this awesome quiz game!"
-        }
-      };
-    }
-    
-    return { data: {} };
-  },
-  
-  post: async (url: string, data: any) => {
-    console.log(`POST request to ${url}`, data);
-    
-    // Mock user creation
-    if (url === '/user') {
-      return { 
-        data: {
-          user_id: "new-user-123",
-          username: data.username,
-          score: 0
-        }
-      };
-    }
-    
-    return { data: {} };
-  }
-};
+   
 
 // Use this for development, will be replaced with real API in production
-const API = mockAPI;
-
-const Invite: React.FC = () => {
+interface InviteProps {
+  user : {
+    user_id: string;
+    username: string;
+    score?: number;}
+}
+const Invite: React.FC = (  ) => {
   const { inviteId } = useParams<{inviteId: string}>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -180,7 +150,7 @@ const Invite: React.FC = () => {
 
           {inviter && (
             <div className="mb-6">
-              <ScoreDisplay totalScore={inviter.score} />
+             <ScoreDisplay user={{ user_id: inviter.inviter_id }} />
             </div>
           )}
           

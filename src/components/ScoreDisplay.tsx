@@ -1,16 +1,34 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
 
 interface ScoreDisplayProps {
-  totalScore: number;
-  sessionScore?: number;
+  user: { user_id: string};
 }
 
-const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ totalScore, sessionScore = 0 }) => {
-  return (
+const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ user }) => {
+  const [totalScore, setTotalScore] = useState(0);
+  const [sessionScore, setSessionScore] = useState(0);
+
+useEffect(() => {
+  const fetchScores = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/game/scores/${user.user_id}`);
+      console.log("Fetched scores:", res.data); // Optional: for debugging
+      setTotalScore(res.data.total_score);
+      setSessionScore(res.data.current_score);
+    } catch (err) {
+      console.error('Failed to load scores:', err);
+    }
+  };
+
+  if (user?.user_id) {
+    fetchScores();
+  }
+}, [user?.user_id]); 
+return (
     <div className="flex items-center justify-between mb-6">
       <Card className="bg-gradient-to-r from-quiz-primary to-quiz-primary/80 text-white p-3 flex items-center gap-2 shine-effect">
         <Trophy className="h-5 w-5" />
@@ -19,7 +37,7 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ totalScore, sessionScore = 
           <p className="font-bold text-xl">{totalScore}</p>
         </div>
       </Card>
-      
+
       {sessionScore > 0 && (
         <Card className={cn(
           "bg-gradient-to-r from-quiz-secondary to-quiz-secondary/80 text-white p-3 flex items-center gap-2",
