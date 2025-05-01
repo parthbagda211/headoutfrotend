@@ -37,7 +37,7 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ user }) => {
 
     if (user?.user_id) {
       fetchScores();
-      interval = setInterval(fetchScores, 60000); // Fetch scores every 1 minute
+      interval = setInterval(fetchScores, 3000); // Fetch scores every 1 minute
     }
   }, [user?.user_id]);
 

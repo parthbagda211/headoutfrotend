@@ -34,8 +34,10 @@ const QuizGame: React.FC<QuizGameProps> = ({ user }) => {
   const [scores, setScores] = useState({ total_score: user.score, current_score: 0 });
   const [cluesShown, setCluesShown] = useState<string[]>([]);
   const [wrongAttempt, setWrongAttempt] = useState(false);
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   const { toast } = useToast();
+
 
   const fetchScores = async () => {
     try {
