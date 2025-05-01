@@ -56,7 +56,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
       if (navigator.share) {
         try {
           await navigator.share({
-            title: 'Join my Quiz Clue Champ game!',
+            title: 'Join my Ultimate Travel Guessing Game!',
             text: `I've scored ${user.score || 0} points. Can you beat me?`,
             url: link,
           });
@@ -65,7 +65,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
         }
       } else {
         // Fallback to WhatsApp sharing
-        const encodedMsg = encodeURIComponent(`Join my Quiz Clue Champ game! ${link}`);
+        const encodedMsg = encodeURIComponent(`Join my Ultimate Travel Guessing Game! ${link}`);
         window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
       }
     } catch (err) {
@@ -80,7 +80,7 @@ const Home: React.FC<HomeProps> = ({ user }) => {
   
 
   return (
-    <div className="fixed left-4 top-1/2 transform -translate-y-1/2 w-full max-w-xs">
+    <div className="container max-w-2xl py-8">
     <Card className="border-0 shadow-lg">
       <CardHeader className="bg-gradient-to-r from-quiz-primary/10 to-quiz-secondary/10">
         <CardTitle className="text-2xl font-bold">

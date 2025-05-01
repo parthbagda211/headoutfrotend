@@ -169,14 +169,14 @@ const Index: React.FC<IndexProps> = ({ user }) => {
   return (
     <div className="ml-auto mr-auto max-w-3xl px-4 py-12">
   <div className="mb-8 text-center">
-    <h1 className="text-4xl font-bold text-quiz-primary mb-2 tracking-tight">Quiz Clue Champ</h1>
+    <h1 className="text-4xl font-bold text-quiz-primary mb-2 tracking-tight">The Ultimate Travel Guessing Game!</h1>
     <p className="text-muted-foreground">Guess the answer based on the clues!</p>
   </div>
 
   <Card className="border-0 shadow-lg">
     <CardHeader className="bg-gradient-to-r from-quiz-primary/10 to-quiz-secondary/10 px-6">
       <div className="flex justify-between items-start">
-        <CardTitle className="text-2xl font-bold">Challenge Time</CardTitle>
+        <CardTitle className="text-2xl font-bold">The Globetrotter Challenge</CardTitle>
         <Button
           variant="ghost"
           size="icon"

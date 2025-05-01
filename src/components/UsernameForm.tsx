@@ -32,7 +32,7 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
       setSubmitting(true);
 
       // Ensure the API endpoint matches your backend route
-      const res = await axios.post('http://localhost:5000/api/user', { username });
+      const res = await axios.post('https://headoutbackend-1-vwgp.onrender.com/api/user', { username });
 
       setUser(res.data);
 
@@ -56,7 +56,7 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ setUser }) => {
     <div className="container max-w-md py-12">
       <Card className="border-0 shadow-lg overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-quiz-primary/10 to-quiz-secondary/10">
-          <CardTitle className="text-2xl font-bold">Quiz Clue Champ</CardTitle>
+          <CardTitle className="text-2xl font-bold">The Ultimate Travel Guessing Game!</CardTitle>
         </CardHeader>
 
         <CardContent className="p-6 pt-8">

@@ -15,7 +15,7 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ user }) => {
 useEffect(() => {
   const fetchScores = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/game/scores/${user.user_id}`);
+      const res = await axios.get(`https://headoutbackend-1-vwgp.onrender.com/api/game/scores/${user.user_id}`);
       console.log("Fetched scores:", res.data); // Optional: for debugging
       setTotalScore(res.data.total_score);
       setSessionScore(res.data.current_score);
@@ -27,6 +27,8 @@ useEffect(() => {
   if (user?.user_id) {
     fetchScores();
   }
+  const interval = setInterval(fetchScores, 3000); // every 3 seconds
+  return () => clearInterval(interval);
 }, [user?.user_id]); 
 return (
     <div className="flex items-center justify-between mb-6">
