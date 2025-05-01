@@ -10,7 +10,6 @@ import QuizOption from "@/components/QuizOption";
 import ScoreDisplay from "@/components/ScoreDisplay";
 import QuizFeedback from "@/components/QuizFeedback";
 import { cn } from "@/lib/utils";
-import axios from 'axios';
 import { API } from '@/api/api';
 import CountQuestionDisplay from '@/components/CountQuestionDisplay';
 
@@ -27,8 +26,6 @@ const Index: React.FC<IndexProps> = ({ user }) => {
   const [feedback, setFeedback] = useState<any>(null);
   const [disabled, setDisabled] = useState(false);
   const [clues, setClues] = useState<string[]>([]);
-  const [secondClueShown, setSecondClueShown] = useState(false);
-  const [showEncouragement, setShowEncouragement] = useState(false);
   const [loading, setLoading] = useState(true);
   const [totalScore, setTotalScore] = useState(0);
   const [sessionScore, setSessionScore] = useState(0);
@@ -38,17 +35,12 @@ const Index: React.FC<IndexProps> = ({ user }) => {
   const [correctCount, setCorrectCount] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
 
-
-
   const fetchScores = async () => {
     try {
       const res = await API.get(`/game/scores/${user.user_id}`);
-      console.log("Fetched scores:", res); // ✅ Log to confirm
-  
       setTotalScore(res.total_score);
       setSessionScore(res.current_score);
     } catch (err) {
-      console.error('Error fetching scores:', err);
       toast({
         title: "Error",
         description: "Could not fetch your scores. Please try again.",
@@ -56,26 +48,19 @@ const Index: React.FC<IndexProps> = ({ user }) => {
       });
     }
   };
-  
 
   const fetchQuestion = async () => {
     setLoading(true);
     try {
       const res = await API.get('/game/question');
-      console.log("Fetched question:", res); // ✅ Correct: no .data
-  
       if (!res?.clues || !Array.isArray(res.clues)) {
         throw new Error("Invalid clue format");
       }
-  
       setQuestion(res);
-      setClues([res.clues[0]]);
+      setClues(res.clues); // Show both clues
       setFeedback(null);
       setDisabled(false);
-      setSecondClueShown(false);
-      setShowEncouragement(false);
     } catch (err) {
-      console.error('Error fetching question:', err);
       toast({
         title: "Error",
         description: "Could not fetch the next question. Please try again.",
@@ -85,61 +70,38 @@ const Index: React.FC<IndexProps> = ({ user }) => {
       setLoading(false);
     }
   };
-  
 
   const guess = async (option: string) => {
     if (disabled) return;
-  
+
     try {
-      const wasSecondClueShown = secondClueShown; // Snapshot before API response
-  
       const res = await API.post('/game/guess', {
         selected: option,
         answer: question.answer_id,
         user_id: user.user_id,
       });
-  
-      console.log("Guess response:", res);
-  
-      const { correct, already_answered, extra_clue } = res;
-  
-      // Only count attempts if it's a new guess
-      if (!already_answered) {
+
+      if (!res.already_answered) {
         setTotalAttempts((prev) => prev + 1);
-  
-        if (correct) {
-          setCorrectCount((prev) => prev + 1);
-          setCorrectQuestions((prev) => [...prev, question.answer_id]);
-  
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 },
-          });
-        } else if (wasSecondClueShown) {
-          // ✅ Count as incorrect ONLY if this was AFTER second clue
-          setIncorrectQuestions((prev) => [...prev, question.answer_id]);
+
+        if (res.correct) {
+          if (!correctQuestions.includes(question.answer_id)) {
+            setCorrectCount((prev) => prev + 1);
+            setCorrectQuestions((prev) => [...prev, question.answer_id]);
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          }
+        } else {
+          if (!incorrectQuestions.includes(question.answer_id)) {
+            setIncorrectQuestions((prev) => [...prev, question.answer_id]);
+          }
         }
       }
-  
-      // If guess is wrong AND second clue not yet shown, show second clue
-      if (!correct && extra_clue && !wasSecondClueShown) {
-        if (!clues.includes(extra_clue)) {
-          setClues((prev) => [...prev, extra_clue]);
-        }
-        setSecondClueShown(true);
-        setShowEncouragement(true);
-        await fetchScores();
-        return; // Wait for user's second attempt before showing feedback
-      }
-  
-      // If correct or second clue already shown, show feedback
+
       setFeedback(res);
       setDisabled(true);
       await fetchScores();
-  
+
     } catch (err) {
-      console.error('Error submitting guess:', err);
       toast({
         title: "Error",
         description: "Could not submit your answer. Please try again.",
@@ -147,11 +109,11 @@ const Index: React.FC<IndexProps> = ({ user }) => {
       });
     }
   };
-  
+
   useEffect(() => {
     fetchQuestion();
     fetchScores();
-  }, [ user.user_id,]);
+  }, [user.user_id]);
 
   if (loading) {
     return (
@@ -165,76 +127,66 @@ const Index: React.FC<IndexProps> = ({ user }) => {
 
   return (
     <div className="ml-auto mr-auto max-w-3xl px-4 py-12">
-  <div className="mb-8 text-center">
-    <h1 className="text-4xl font-bold text-quiz-primary mb-2 tracking-tight">The Ultimate Travel Guessing Game!</h1>
-    <p className="text-muted-foreground">Guess the answer based on the clues!</p>
-  </div>
-
-  <Card className="border-0 shadow-lg">
-    <CardHeader className="bg-gradient-to-r from-quiz-primary/10 to-quiz-secondary/10 px-6">
-      <div className="flex justify-between items-start">
-        <CardTitle className="text-2xl font-bold">The Globetrotter Challenge</CardTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={fetchQuestion}
-          className="h-8 w-8 rounded-full"
-          title="Get a new question"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-      </div>
-    </CardHeader>
-
-    <CardContent className="p-6">
-      <CountQuestionDisplay correctCount={correctCount} totalAttempts={totalAttempts} />
-
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-          <Info className="h-5 w-5 text-primary" />
-          <span>{clues.length > 1 ? 'Clues' : 'Clue'}</span>
-        </h3>
-
-        {clues.map((clue, index) => (
-          <QuizClue key={index} clue={clue} index={index} />
-        ))}
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold text-quiz-primary mb-2 tracking-tight">The Ultimate Travel Guessing Game!</h1>
+        <p className="text-muted-foreground">Guess the answer based on the clues!</p>
       </div>
 
-      {showEncouragement && !feedback && (
-        <Alert className="mb-6 animate-bounce-in border-l-4 border-quiz-primary">
-          <AlertDescription className="flex items-center gap-2">
-            <span className="text-lg">🔍</span>
-            <span>Try again! Here's another clue to help you.</span>
-          </AlertDescription>
-        </Alert>
-      )}
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-quiz-primary/10 to-quiz-secondary/10 px-6">
+          <div className="flex justify-between items-start">
+            <CardTitle className="text-2xl font-bold">The Globetrotter Challenge</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={fetchQuestion}
+              className="h-8 w-8 rounded-full"
+              title="Get a new question"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
 
-      <div className="mb-4">
-        <h3 className="text-xl font-semibold mb-3">Choose your answer:</h3>
-        <div className={cn(feedback ? "opacity-80" : "")}>
-          {question?.options.map((opt: string, idx: number) => (
-            <QuizOption
-              key={opt}
-              option={opt}
-              onSelect={() => guess(opt)}
-              disabled={disabled}
-              index={idx}
-              feedback={feedback ? {
-                correct: feedback.correct,
-                selected: opt
-              } : null}
-            />
-          ))}
-        </div>
-      </div>
+        <CardContent className="p-6">
+          <CountQuestionDisplay correctCount={correctCount} totalAttempts={totalAttempts} />
 
-      {feedback && (
-        <QuizFeedback feedback={feedback} onNext={fetchQuestion} />
-      )}
-    </CardContent>
-  </Card>
-</div>
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+              <Info className="h-5 w-5 text-primary" />
+              <span>Clues</span>
+            </h3>
 
+            {clues.map((clue, index) => (
+              <QuizClue key={index} clue={clue} index={index} />
+            ))}
+          </div>
+
+          <div className="mb-4">
+            <h3 className="text-xl font-semibold mb-3">Choose your answer:</h3>
+            <div className={cn(feedback ? "opacity-80" : "")}> 
+              {question?.options.map((opt: string, idx: number) => (
+                <QuizOption
+                  key={opt}
+                  option={opt}
+                  onSelect={() => guess(opt)}
+                  disabled={disabled}
+                  index={idx}
+                  feedback={feedback ? {
+                    correct: feedback.correct,
+                    selected: opt
+                  } : null}
+                />
+              ))}
+            </div>
+          </div>
+
+          {feedback && (
+            <QuizFeedback feedback={feedback} onNext={fetchQuestion} />
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
