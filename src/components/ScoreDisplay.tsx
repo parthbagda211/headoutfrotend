@@ -5,32 +5,44 @@ import { cn } from '@/lib/utils';
 import axios from 'axios';
 
 interface ScoreDisplayProps {
-  user: { user_id: string};
+  user: { user_id: string };
 }
 
 const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ user }) => {
   const [totalScore, setTotalScore] = useState(0);
+  const [baseScore, setBaseScore] = useState(0);  // score when session started
   const [sessionScore, setSessionScore] = useState(0);
 
-useEffect(() => {
-  const fetchScores = async () => {
-    try {
-      const res = await axios.get(`https://headoutbackend-1-vwgp.onrender.com/api/game/scores/${user.user_id}`);
-      console.log("Fetched scores:", res.data); // Optional: for debugging
-      setTotalScore(res.data.total_score);
-      setSessionScore(res.data.current_score);
-    } catch (err) {
-      console.error('Failed to load scores:', err);
-    }
-  };
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
 
-  if (user?.user_id) {
-    fetchScores();
-  }
-  const interval = setInterval(fetchScores, 3000); // every 3 seconds
-  return () => clearInterval(interval);
-}, [user?.user_id]); 
-return (
+    const fetchScores = async () => {
+      try {
+        const res = await axios.get(`https://headoutbackend-1-vwgp.onrender.com/api/game/scores/${user.user_id}`);
+        const newScore = res.data.total_score;
+
+        // On first fetch, initialize base score
+        if (baseScore === 0 && sessionScore === 0) {
+          setBaseScore(newScore);
+          setTotalScore(newScore);
+        } else {
+          setTotalScore(newScore);
+          setSessionScore(newScore - baseScore);
+        }
+      } catch (err) {
+        console.error('Failed to load scores:', err);
+      }
+    };
+
+    if (user?.user_id) {
+      fetchScores();
+      interval = setInterval(fetchScores, 3000);
+    }
+
+    return () => clearInterval(interval);
+  }, [user?.user_id, baseScore, sessionScore]);
+
+  return (
     <div className="flex items-center justify-between mb-6">
       <Card className="bg-gradient-to-r from-quiz-primary to-quiz-primary/80 text-white p-3 flex items-center gap-2 shine-effect">
         <Trophy className="h-5 w-5" />
