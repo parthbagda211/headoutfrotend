@@ -32,24 +32,29 @@ const Invite: React.FC = (  ) => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   
-  useEffect(() => {
-    const fetchInvite = async () => {
-      try {
-        const res = await API.get(`/invite/${inviteId}`);
-        setInviter(res.data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching invite:', err);
-        setError('Could not load invite information. The invite might not exist or has expired.');
-        setLoading(false);
-        toast({
-          title: "Error",
-          description: "Could not load invite information.",
-          variant: "destructive",
-        });
-      }
-    };
+  const fetchInvite = async () => {
+    try {
+    const res = await API.get(`/invite/${inviteId}`);
+    setInviter(res.data);
+    setLoading(false);
+    } catch (err) {
+    console.error('Error fetching invite:', err);
+    setError('Could not load invite information. The invite might not exist or has expired.');
+    setLoading(false);
+    toast({
+      title: "Error",
+      description: "Could not load invite information.",
+      variant: "destructive",
+    });
+    }
+  };
+
+  const handleRedirectToJoin = () => {
+    const syntheticEvent = { preventDefault: () => {} } as React.FormEvent;
+    handleJoin(syntheticEvent);
+  };
     
+  useEffect(() => {
     fetchInvite();
   }, [inviteId, toast]);
 

@@ -87,70 +87,67 @@ const Index: React.FC<IndexProps> = ({ user }) => {
   };
   
 
- const guess = async (option: string) => {
-  if (disabled) return;
-
-  try {
-    const wasSecondClueShown = secondClueShown; // capture BEFORE server response
-
-    const res = await API.post('/game/guess', {
-      selected: option,
-      answer: question.answer_id,
-      user_id: user.user_id,
-    });
-
-    console.log("Guess response:", res);
-
-    // Only count as an attempt if it's a new answer
-    if (!res.already_answered) {
-      setTotalAttempts((prev) => prev + 1);
-
-      if (res.correct) {
-        setCorrectCount((prev) => prev + 1);
-        setCorrectQuestions((prev) => [...prev, question.answer_id]);
-
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-        });
-
-      } else {
-        // ❗ Only count as incorrect if this is AFTER second clue was already shown
-        if (wasSecondClueShown) {
+  const guess = async (option: string) => {
+    if (disabled) return;
+  
+    try {
+      const wasSecondClueShown = secondClueShown; // Snapshot before API response
+  
+      const res = await API.post('/game/guess', {
+        selected: option,
+        answer: question.answer_id,
+        user_id: user.user_id,
+      });
+  
+      console.log("Guess response:", res);
+  
+      const { correct, already_answered, extra_clue } = res;
+  
+      // Only count attempts if it's a new guess
+      if (!already_answered) {
+        setTotalAttempts((prev) => prev + 1);
+  
+        if (correct) {
+          setCorrectCount((prev) => prev + 1);
+          setCorrectQuestions((prev) => [...prev, question.answer_id]);
+  
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+          });
+        } else if (wasSecondClueShown) {
+          // ✅ Count as incorrect ONLY if this was AFTER second clue
           setIncorrectQuestions((prev) => [...prev, question.answer_id]);
         }
       }
-    }
-
-    // Show second clue IF user guessed wrong and hasn’t seen it yet
-    if (!res.correct && res.extra_clue && !secondClueShown) {
-      if (!clues.includes(res.extra_clue)) {
-        setClues((prev) => [...prev, res.extra_clue]);
-      }
-      setSecondClueShown(true);
-      setShowEncouragement(true);
-      await fetchScores();
-      return; // do not show feedback yet — user gets second chance
-    }
-
-    // Only show feedback when second clue already shown or answer was correct
-    setFeedback(res);
-    setDisabled(true);
-    await fetchScores();
-
-  } catch (err) {
-    console.error('Error submitting guess:', err);
-    toast({
-      title: "Error",
-      description: "Could not submit your answer. Please try again.",
-      variant: "destructive",
-    });
-  }
-};
-
   
-
+      // If guess is wrong AND second clue not yet shown, show second clue
+      if (!correct && extra_clue && !wasSecondClueShown) {
+        if (!clues.includes(extra_clue)) {
+          setClues((prev) => [...prev, extra_clue]);
+        }
+        setSecondClueShown(true);
+        setShowEncouragement(true);
+        await fetchScores();
+        return; // Wait for user's second attempt before showing feedback
+      }
+  
+      // If correct or second clue already shown, show feedback
+      setFeedback(res);
+      setDisabled(true);
+      await fetchScores();
+  
+    } catch (err) {
+      console.error('Error submitting guess:', err);
+      toast({
+        title: "Error",
+        description: "Could not submit your answer. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   useEffect(() => {
     fetchQuestion();
     fetchScores();
