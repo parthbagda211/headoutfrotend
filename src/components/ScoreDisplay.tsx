@@ -8,6 +8,7 @@ interface ScoreDisplayProps {
   user: { user_id: string };
 }
 
+
 const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ user }) => {
   const [totalScore, setTotalScore] = useState(0);
   const [baseScore, setBaseScore] = useState(0);  // score when session started
@@ -36,11 +37,10 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ user }) => {
 
     if (user?.user_id) {
       fetchScores();
-      interval = setInterval(fetchScores, 3000);
+      interval = setInterval(fetchScores, 60000); // Fetch scores every 1 minute
     }
+  }, [user?.user_id]);
 
-    return () => clearInterval(interval);
-  }, [user?.user_id, baseScore, sessionScore]);
 
   return (
     <div className="flex items-center justify-between mb-6">
